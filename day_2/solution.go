@@ -12,6 +12,7 @@ type SubmarineController interface {
 	forward(int)
 	down(int)
 	up(int)
+	getPosition() int
 }
 
 type Submarine struct {
@@ -30,7 +31,32 @@ func (s *Submarine) up(steps int) {
 	s.depth -= steps
 }
 
-func (s *Submarine) pilot(commands []string) {
+func (s *Submarine) getPosition() (position int) {
+	return s.depth * s.horizontalPosition
+}
+
+type SubmarineV2 struct {
+	horizontalPosition, depth, aim int
+}
+
+func (s *SubmarineV2) forward(steps int) {
+	s.horizontalPosition += steps
+	s.depth += s.aim * steps
+}
+
+func (s *SubmarineV2) down(steps int) {
+	s.aim += steps
+}
+
+func (s *SubmarineV2) up(steps int) {
+	s.aim -= steps
+}
+
+func (s *SubmarineV2) getPosition() (position int) {
+	return s.depth * s.horizontalPosition
+}
+
+func pilot(s SubmarineController, commands []string) {
 	for _, command := range commands {
 		commandList := strings.Split(command, " ")
 		// fmt.Println("Commands are:", commandList[0], "-", commandList[1])
@@ -54,10 +80,6 @@ func (s *Submarine) pilot(commands []string) {
 	}
 }
 
-func (s *Submarine) getPosition() (position int) {
-	return s.depth * s.horizontalPosition
-}
-
 func getCommands(fileName string) (commands []string) {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -74,9 +96,23 @@ func getCommands(fileName string) (commands []string) {
 }
 
 func main() {
-	sub := Submarine{horizontalPosition: 0, depth: 0}
 	commands := getCommands("input.txt")
-	sub.pilot(commands)
-	fmt.Println(sub.getPosition())
 
+	var sub SubmarineController
+	sub = &Submarine{horizontalPosition: 0, depth: 0}
+	pilot(sub, commands)
+	fmt.Println("Part one answer:", sub.getPosition())
+
+	var subV2 SubmarineController
+	subV2 = &SubmarineV2{horizontalPosition: 0, depth: 0, aim: 0}
+	pilot(subV2, commands)
+	fmt.Println("Part two answer:", subV2.getPosition())
 }
+
+/*
+Output: Day 2
+$> go run solution.go
+
+Part one answer: 1427868
+Part two answer: 1568138742
+*/

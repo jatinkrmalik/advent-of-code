@@ -8,7 +8,7 @@ import (
 )
 
 // windowSize is the batching required to compare depths with
-func find_increasing_depth_count(scanner bufio.Scanner, windowSize int) (count int, err error) {
+func FindIncreasingDepthCount(scanner bufio.Scanner, windowSize int) (count int, err error) {
 	window := make([]int, 0)    // queue impl via int slice
 	windowLog := make([]int, 0) // int slice
 
@@ -50,36 +50,43 @@ func sum(array []int) int {
 	return result
 }
 
-func main() {
-	file, err := os.Open("input.txt")
+func seekFileToStart(file os.File) {
+	_, err := file.Seek(0, 0) // seek file to start
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getFileAndScanner(fileName string) (*os.File, *bufio.Scanner) {
+	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
 	}
+	return file, bufio.NewScanner(file)
+}
+
+func main() {
+	file, scanner := getFileAndScanner("input.txt")
 	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	partOneAnswer, err := find_increasing_depth_count(*scanner, 1)
+
+	partOneAnswer, err := FindIncreasingDepthCount(*scanner, 1)
 	if err != nil {
 		panic(err)
 	}
-
 	fmt.Println("Part one answer:", partOneAnswer)
 
-	_, err = file.Seek(0, 0) // seek file to start
+	seekFileToStart(*file)
+
+	partTwoAnswer, err := FindIncreasingDepthCount(*scanner, 3)
 	if err != nil {
 		panic(err)
 	}
-
-	partTwoAnswer, err := find_increasing_depth_count(*scanner, 3)
-	if err != nil {
-		panic(err)
-	}
-
 	fmt.Println("Part two answer:", partTwoAnswer)
 }
 
 /*
-Output:
+Output: Day 1
 $> go run solution.go
 
 Part one answer: 1390
